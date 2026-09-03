@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<!-- File Name: index.html -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADAPTI Engine — Live Interactive Sandbox</title>
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --font-size-base: 16px;
+      --button-padding: 12px 20px;
+    }
+
+    /* --- DYNAMIC SIMPLIFY MODE OVERRIDES --- */
+    body.simplify-mode {
+      --bg-color: #f0fdf4;
+      --card-bg: #ffffff;
+      --text-main: #052e16;
+      --text-muted: #166534;
+      --primary: #15803d;
+      --primary-hover: #166534;
+      --border: #bbf7d0;
+      --radius: 20px;
+      --font-size-base: 20px;
+      --button-padding: 20px 32px;
+    }
+
+    body.font-large {
+      font-size: 24px !important;
+    }
+
+    body.simplify-mode .non-essential {
+      display: none !important;
+    }
+
+    body.simplify-mode .guided-prompt {
+      display: block !important;
+    }
+
+    /* --- BASE STYLES --- */
+    * {
+      box-sizing: border-box;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: var(--font-size-base);
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 2rem 1rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-size: 1.75em;
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .status-card {
+      background: var(--bg-color);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.85em;
+      font-weight: 600;
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .badge.active {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #86efac;
+    }
+
+    .progress-bar-bg {
+      height: 10px;
+      background: var(--border);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      border-radius: 9999px;
+      transition: width 0.4s ease;
+    }
+
+    .progress-bar-fill.warning { background: #eab308; }
+    .progress-bar-fill.danger { background: #15803d; }
+
+    .guided-prompt {
+      display: none;
+      background: #dcfce7;
+      border: 2px dashed #22c55e;
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: #14532d;
+    }
+
+    .section-title {
+      font-size: 1.1em;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: var(--button-padding);
+      font-size: 0.95em;
+      font-weight: 600;
+      border-radius: var(--radius);
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover { background: var(--primary-hover); }
+
+    button.secondary {
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+
+    input {
+      font-size: 0.95em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>ADAPTI Engine</h1>
+      <span id="statusBadge" class="badge">Standard Mode</span>
+    </div>
+
+    <!-- Status Metric Display -->
+    <div class="status-card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-weight: 500;">Friction Load</span>
+        <span style="font-weight: 700;"><span id="scoreDisplay">0</span> / 50</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div id="progressFill" class="progress-bar-fill"></div>
+      </div>
+    </div>
+
+    <!-- Dynamic Assist Banner -->
+    <div class="guided-prompt">
+      <h3>💡 Need a hand?</h3>
+      <p style="margin: 0; font-size: 0.9em;">We've automatically increased button sizes and simplified the layout for you.</p>
+    </div>
+
+    <!-- AI Natural Language Assistant -->
+    <div class="section-title">AI Assistant</div>
+    <div style="display: flex; gap: 8px; margin-bottom: 1rem;">
+      <input 
+        type="text" 
+        id="aiInput" 
+        placeholder='e.g., "The text is too small and I can&#39;t read it"' 
+        style="flex: 1; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border);"
+      />
+      <button id="btnAskAI" style="width: auto; white-space: nowrap;">Ask AI</button>
+    </div>
+
+    <!-- Manual Triggers -->
+    <div class="section-title">Manual Friction Triggers</div>
+    <div class="grid">
+      <button id="btnClick">Repeated Click (+15)</button>
+      <button id="btnError">Form Error (+20)</button>
+      <button id="btnBack">Backtracking (+20)</button>
+    </div>
+
+    <!-- Automated Detection -->
+    <div class="section-title non-essential">Automated Event Detection</div>
+    <div class="grid non-essential">
+      <button id="testRageClick" class="secondary">Click me 3 times fast</button>
+    </div>
+
+    <!-- Engine Control -->
+    <div class="section-title">Engine Controls</div>
+    <div class="grid">
+      <button id="btnReset" class="secondary">Reset Score</button>
+    </div>
+  </div>
+
+  <script src="friction.js"></script>
+  <script src="tracker.js"></script>
+  <script>
+    // Initialize Core Engine
+    const adapti = new AdaptiEngine({ threshold: 50 });
+    attachAdaptiTracker(adapti);
+
+    const scoreDisplay = document.getElementById("scoreDisplay");
+    const statusBadge = document.getElementById("statusBadge");
+    const progressFill = document.getElementById("progressFill");
+
+    // Subscribe UI to AdaptiEngine updates
+    adapti.subscribe((state) => {
+      scoreDisplay.textContent = state.score;
+      
+      const percentage = Math.min((state.score / 50) * 100, 100);
+      progressFill.style.width = percentage + "%";
+
+      if (percentage >= 100) {
+        progressFill.className = "progress-bar-fill danger";
+      } else if (percentage >= 50) {
+        progressFill.className = "progress-bar-fill warning";
+      } else {
+        progressFill.className = "progress-bar-fill";
+      }
+
+      if (state.isHighFriction) {
+        document.body.classList.add("simplify-mode");
+        statusBadge.textContent = "⚙️ Simplify Mode Active";
+        statusBadge.classList.add("active");
+      } else {
+        document.body.classList.remove("simplify-mode");
+        statusBadge.textContent = "Standard Mode";
+        statusBadge.classList.remove("active");
+      }
+    });
+
+    // Custom UI handling for specific AI actions
+    const baseTrigger = adapti.triggerAdaptation.bind(adapti);
+    adapti.triggerAdaptation = (mode, config) => {
+      baseTrigger(mode, config);
+      if (mode === "INCREASE_FONT_SIZE") {
+        document.body.classList.add("font-large");
+      }
+    };
+
+    // Wire up button controls
+    document.getElementById("btnClick").onclick = () => adapti.repeatedClick();
+    document.getElementById("btnError").onclick = () => adapti.formError();
+    document.getElementById("btnBack").onclick = () => adapti.backtracking();
+    document.getElementById("btnReset").onclick = () => {
+      adapti.resetScore();
+      document.body.classList.remove("font-large");
+    };
+
+    // Wire up AI assistant button
+    document.getElementById("btnAskAI").onclick = () => {
+      const input = document.getElementById("aiInput").value;
+      if (input.trim()) {
+        adapti.analyzeWithAI(input);
+      }
+    };
+  </script>
+</body>
+</html>
