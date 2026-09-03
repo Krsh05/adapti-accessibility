@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ADAPTI Prototype</title>
   <style>
-    * { box-sizing: border-box; transition: background 0.2s, color 0.2s; }
+    * { box-sizing: border-box; transition: background 0.2s, color 0.2s, font-size 0.2s; }
     :root {
       --bg-main: #f8fafc;
       --card-bg: #ffffff;
@@ -15,6 +15,7 @@
       --border-color: #e2e8f0;
       --base-font-size: 15px;
       --font-family: Arial, sans-serif;
+      --adapti-scale: 1; /* Dynamic scaling controlled by Member 4 AI actions */
     }
 
     body {
@@ -23,9 +24,11 @@
       color: var(--text-main);
       margin: 0;
       padding: 24px;
-      font-size: var(--base-font-size);
+      font-size: calc(var(--base-font-size) * var(--adapti-scale));
+      line-height: 1.5;
     }
 
+    /* High-Contrast Mode */
     body.high-contrast {
       --bg-main: #000000;
       --card-bg: #121212;
@@ -41,10 +44,58 @@
       background: #000000 !important;
     }
 
+    /* Dyslexic-Friendly Typography Mode */
     body.dyslexic-mode {
       --font-family: 'Verdana', 'Comic Sans MS', sans-serif;
       letter-spacing: 0.08em;
       line-height: 1.8;
+    }
+
+    /* -------------------------------------------------------------
+       Member 4 Engine State Rules: .font-large & .simplify-mode
+       ------------------------------------------------------------- */
+    body.font-large {
+      line-height: 1.8;
+      letter-spacing: 0.03em;
+    }
+    body.font-large label,
+    body.font-large p,
+    body.font-large span {
+      font-size: calc(16px * var(--adapti-scale));
+    }
+    body.font-large h2,
+    body.font-large h3 {
+      font-size: calc(24px * var(--adapti-scale));
+    }
+
+    /* Triggered when Member 4 friction score reaches >= 50 */
+    body.simplify-mode .warning-box,
+    body.simplify-mode .tag-portal,
+    body.simplify-mode header p {
+      display: none !important;
+    }
+
+    body.simplify-mode .card {
+      border: 2px solid #2563eb !important;
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.15) !important;
+      padding: 36px !important;
+    }
+
+    body.simplify-mode input[type="text"],
+    body.simplify-mode input[type="file"] {
+      min-height: 50px;
+      padding: 14px 16px;
+      font-size: 16px;
+      border: 2px solid #94a3b8;
+      border-radius: 8px;
+    }
+
+    body.simplify-mode .btn-primary,
+    body.simplify-mode .btn-success {
+      min-height: 52px;
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: 8px;
     }
 
     .container { max-width: 760px; margin: 0 auto; }
@@ -300,12 +351,11 @@
 
   <!-- Telemetry HUD -->
   <div class="telemetry-hud" id="hud">
-    <div style="font-weight: bold; margin-bottom: 4px; color: #fff;">📊 ADAPTI Telemetry Engine</div>
-    <div>Rage Clicks: <span id="hudClicks">0</span>/3</div>
-    <div>Cursor Direction Flips: <span id="hudTremor">0</span></div>
-    <div>Hesitation Idle: <span id="hudIdle">0</span>s</div>
+    <div style="font-weight: bold; margin-bottom: 4px; color: #fff;">📊 ADAPTI Engine Status</div>
+    <div>Engine State: <span id="hudStateMode" style="color: #4ade80;">Normal</span></div>
+    <div>Friction Threshold: 50</div>
     <div style="margin-top: 6px; display: flex; justify-content: space-between;">
-      <span>Friction Index:</span>
+      <span>Current Friction:</span>
       <span id="hudScore" style="font-weight: bold;">0%</span>
     </div>
     <div class="meter-bar">
@@ -320,7 +370,6 @@
         <span>Accessibility:</span>
         <button class="pill-btn" onclick="toggleContrast()">🌓 Contrast</button>
         <button class="pill-btn" onclick="toggleDyslexia()">📖 Dyslexia Font</button>
-        <!-- Speak as you type toggle -->
         <button class="pill-btn active" id="echoBtn" onclick="toggleSpeechEcho()">🔊 Read While Typing: ON</button>
       </div>
       <div class="a11y-group">
@@ -362,8 +411,8 @@
           </div>
 
           <div>
-            <p style="font-size: 12px; color: var(--text-sub); margin: 0 0 6px 0;">(Demo: Click this button repeatedly to increase friction score)</p>
-            <button class="btn-disabled" onclick="handleRageClick()">Submit Dossier For Verification</button>
+            <p style="font-size: 12px; color: var(--text-sub); margin: 0 0 6px 0;">(Click disabled button repeatedly to raise Member 4 Friction Score)</p>
+            <button class="btn-disabled" id="testRageBtn" onclick="handleLegacyClick()">Submit Dossier For Verification</button>
           </div>
         </div>
       </div>
@@ -383,7 +432,7 @@
             <button class="speak-btn" onclick="speakText('We simplified this page. What is your full name?')">🔊 Listen</button>
           </div>
           
-          <label>Your Name <span style="font-weight: normal; color: #64748b;">(Type or use spacebar to hear words aloud)</span></label>
+          <label>Your Name <span style="font-weight: normal; color: #64748b;">(Type or speak)</span></label>
           <div class="input-with-voice">
             <input 
               type="text" 
@@ -432,21 +481,110 @@
       <h4>⚡ High Friction Detected</h4>
       <button class="speak-btn" style="padding: 2px 6px; font-size: 11px;" onclick="speakText('Difficulty detected. Would you like ADAPTI to simplify this form into easy steps?')">🔊</button>
     </div>
-    <p>Passive telemetry detected repeated clicks and hesitation. Simplify this form?</p>
+    <p>Passive telemetry detected friction reaching the threshold. Simplify this form?</p>
     <div style="display: flex; gap: 8px;">
       <button class="btn-primary" style="padding: 8px 14px; font-size: 12px; width: auto;" onclick="activateAdapti()">Simplify Now</button>
       <button class="toggle-btn" onclick="dismissPrompt()">No thanks</button>
     </div>
   </div>
 
+  <!-- ============================================================= -->
+  <!-- 1. IMPORT MEMBER 4'S ENGINE AND DOM TRACKER SCRIPTS           -->
+  <!-- ============================================================= -->
+  <script src="../adaptation/friction.js"></script>
+  <script src="../adaptation/tracker.js"></script>
+
   <script>
-    let clickCount = 0;
-    let tremorCount = 0;
-    let idleSeconds = 0;
-    let frictionScore = 0;
     let currentMode = 'portal';
     let baseFontSize = 15;
     let speechEchoEnabled = true;
+    let adaptiEngineInstance = null;
+    let currentFontScale = 1;
+
+    // =============================================================
+    // 2. INITIALIZE AND SUBSCRIBE TO MEMBER 4'S ENGINE
+    // =============================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check if Member 4's class is available
+      if (typeof AdaptiEngine !== 'undefined') {
+        adaptiEngineInstance = new AdaptiEngine({ threshold: 50 });
+
+        // Attach tracker if available
+        if (typeof attachAdaptiTracker === 'function') {
+          attachAdaptiTracker(adaptiEngineInstance);
+        }
+
+        // Subscribe to engine state
+        adaptiEngineInstance.subscribe((state) => {
+          const score = Math.round(state.score || 0);
+          
+          // Update HUD
+          const hudScore = document.getElementById('hudScore');
+          const meterFill = document.getElementById('meterFill');
+          const hudMode = document.getElementById('hudStateMode');
+          
+          if (hudScore) hudScore.textContent = `${score}%`;
+          if (meterFill) {
+            meterFill.style.width = `${Math.min(100, score)}%`;
+            meterFill.style.background = score >= 50 ? '#ef4444' : (score >= 25 ? '#eab308' : '#22c55e');
+          }
+
+          // High Friction trigger (Threshold: 50)
+          if (state.isHighFriction || score >= 50) {
+            if (hudMode) {
+              hudMode.textContent = 'High Friction';
+              hudMode.style.color = '#ef4444';
+            }
+            document.body.classList.add('simplify-mode');
+            if (currentMode === 'portal') {
+              document.getElementById('frictionPrompt').style.display = 'block';
+            }
+          } else {
+            if (hudMode) {
+              hudMode.textContent = 'Normal';
+              hudMode.style.color = '#4ade80';
+            }
+          }
+
+          // Process direct AI actions emitted by Member 4
+          if (state.lastAction) {
+            handleAiAction(state.lastAction);
+          }
+        });
+      }
+    });
+
+    // Handle AI Actions dispatched by Member 4's module
+    function handleAiAction(action) {
+      const actionType = action.type || action;
+      switch (actionType) {
+        case 'INCREASE_FONT_SIZE':
+          currentFontScale = Math.min(1.4, currentFontScale + 0.15);
+          document.documentElement.style.setProperty('--adapti-scale', currentFontScale);
+          document.body.classList.add('font-large');
+          break;
+        case 'RESET_FONT_SIZE':
+          currentFontScale = 1;
+          document.documentElement.style.setProperty('--adapti-scale', 1);
+          document.body.classList.remove('font-large');
+          break;
+        case 'SIMPLIFY_MODE':
+          activateAdapti();
+          break;
+        case 'HIGH_CONTRAST':
+          toggleContrast();
+          break;
+        default:
+          console.log('Action received:', actionType);
+      }
+    }
+
+    // Fallback rage-click trigger to drive Member 4's engine if needed
+    function handleLegacyClick() {
+      if (adaptiEngineInstance && typeof adaptiEngineInstance.recordEvent === 'function') {
+        adaptiEngineInstance.recordEvent({ type: 'RAGE_CLICK', weight: 20 });
+      }
+    }
 
     // --- Type-and-Speak (Echo Typing) Engine ---
     function toggleSpeechEcho() {
@@ -463,30 +601,21 @@
 
     function handleTypeEcho(event) {
       if (!speechEchoEnabled) return;
-
       const text = event.target.value.trim();
       if (!text) return;
 
-      // 1. If user presses Space: speak the last typed word
       if (event.code === 'Space' || event.key === ' ') {
         const words = text.split(/\s+/);
         const lastWord = words[words.length - 1];
-        if (lastWord) {
-          speakText(lastWord);
-        }
-      }
-
-      // 2. If user finishes a sentence with '.', '!', or '?': speak the sentence
-      else if (event.key === '.' || event.key === '!' || event.key === '?') {
+        if (lastWord) speakText(lastWord);
+      } else if (event.key === '.' || event.key === '!' || event.key === '?') {
         const sentences = text.split(/[.!?]+/).filter(Boolean);
         const lastSentence = sentences[sentences.length - 1];
-        if (lastSentence) {
-          speakText(lastSentence);
-        }
+        if (lastSentence) speakText(lastSentence);
       }
     }
 
-    // --- Web Speech API (TTS) ---
+    // --- Text-to-Speech ---
     function speakText(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
@@ -496,76 +625,11 @@
       }
     }
 
-    // --- Accessibility Customizers ---
-    function toggleContrast() {
-      document.body.classList.toggle('high-contrast');
-    }
-
-    function toggleDyslexia() {
-      document.body.classList.toggle('dyslexic-mode');
-    }
-
-    function adjustFontSize(delta) {
-      baseFontSize = Math.min(22, Math.max(12, baseFontSize + delta));
-      document.documentElement.style.setProperty('--base-font-size', baseFontSize + 'px');
-    }
-
-    // --- Telemetry & Friction Calculation ---
-    function updateFriction(addClicks = 0) {
-      clickCount += addClicks;
-      frictionScore = Math.min(100, (clickCount * 25) + (tremorCount * 2) + (idleSeconds * 5));
-
-      document.getElementById('hudClicks').textContent = clickCount;
-      document.getElementById('hudTremor').textContent = tremorCount;
-      document.getElementById('hudIdle').textContent = idleSeconds;
-      document.getElementById('hudScore').textContent = frictionScore + '%';
-
-      const meterFill = document.getElementById('meterFill');
-      meterFill.style.width = frictionScore + '%';
-
-      if (frictionScore > 65) {
-        meterFill.style.background = '#ef4444';
-      } else if (frictionScore > 35) {
-        meterFill.style.background = '#eab308';
-      } else {
-        meterFill.style.background = '#22c55e';
-      }
-
-      if (frictionScore >= 70 && currentMode === 'portal') {
-        document.getElementById('frictionPrompt').style.display = 'block';
-      }
-    }
-
-    let lastDirX = 0;
-    let lastX = 0;
-    window.addEventListener('mousemove', (e) => {
-      idleSeconds = 0;
-      const dirX = e.clientX > lastX ? 1 : -1;
-      if (dirX !== lastDirX && Math.abs(e.clientX - lastX) > 10) {
-        tremorCount++;
-        lastDirX = dirX;
-        updateFriction(0);
-      }
-      lastX = e.clientX;
-    });
-
-    setInterval(() => {
-      if (currentMode === 'portal') {
-        idleSeconds++;
-        updateFriction(0);
-      }
-    }, 1000);
-
-    function handleRageClick() {
-      updateFriction(1);
-    }
-
-    // --- Speech Recognition ---
-    // --- Enhanced Voice Dictation with Real-Time Display & Echo Back ---
+    // --- Speech Recognition Dictation with Live Text & Echo ---
     function startDictation() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Speech recognition is supported in Chrome & Edge browsers.");
+        alert("Speech recognition is supported in Chrome & Edge.");
         return;
       }
 
@@ -576,7 +640,7 @@
       const recognition = new SpeechRecognition();
       recognition.lang = 'en-US';
       recognition.continuous = false;
-      recognition.interimResults = true; // Shows live words on the screen as you talk
+      recognition.interimResults = true;
 
       let finalTranscript = '';
 
@@ -595,23 +659,19 @@
             interimTranscript += event.results[i][0].transcript;
           }
         }
-        // Immediately render text into the input field
         input.value = finalTranscript || interimTranscript;
       };
 
-      recognition.onerror = (event) => {
+      recognition.onerror = () => {
         micBtn.classList.remove('recording');
         indicator.style.display = 'none';
-        console.error("Speech Recognition Error: ", event.error);
       };
 
       recognition.onend = () => {
         micBtn.classList.remove('recording');
         indicator.style.display = 'none';
-
         const capturedText = input.value.trim();
         if (capturedText) {
-          // Echo-speak the captured sentence back to the user
           speakText(`You said: ${capturedText}`);
         }
       };
@@ -619,7 +679,21 @@
       recognition.start();
     }
 
-    // --- View Handlers ---
+    // --- Visual Accessibility Toolbar ---
+    function toggleContrast() {
+      document.body.classList.toggle('high-contrast');
+    }
+
+    function toggleDyslexia() {
+      document.body.classList.toggle('dyslexic-mode');
+    }
+
+    function adjustFontSize(delta) {
+      baseFontSize = Math.min(22, Math.max(12, baseFontSize + delta));
+      document.documentElement.style.setProperty('--base-font-size', baseFontSize + 'px');
+    }
+
+    // --- Navigation Handlers ---
     function dismissPrompt() {
       document.getElementById('frictionPrompt').style.display = 'none';
     }
@@ -683,12 +757,12 @@
     }
 
     function resetDemo() {
-      clickCount = 0;
-      tremorCount = 0;
-      idleSeconds = 0;
-      updateFriction(0);
       document.getElementById('userNameInput').value = '';
       document.getElementById('userDocInput').value = '';
+      document.body.classList.remove('simplify-mode');
+      if (adaptiEngineInstance && typeof adaptiEngineInstance.reset === 'function') {
+        adaptiEngineInstance.reset();
+      }
       setMode('portal');
     }
   </script>
