@@ -26,7 +26,6 @@
       font-size: var(--base-font-size);
     }
 
-    /* High-Contrast Mode */
     body.high-contrast {
       --bg-main: #000000;
       --card-bg: #121212;
@@ -42,7 +41,6 @@
       background: #000000 !important;
     }
 
-    /* Dyslexic-Friendly Typography Mode */
     body.dyslexic-mode {
       --font-family: 'Verdana', 'Comic Sans MS', sans-serif;
       letter-spacing: 0.08em;
@@ -80,7 +78,11 @@
       font-size: 12px;
       font-weight: bold;
     }
-    .pill-btn:hover { border-color: var(--primary); }
+    .pill-btn.active {
+      background: #dbeafe;
+      border-color: #2563eb;
+      color: #1e40af;
+    }
 
     /* Header */
     .header {
@@ -243,7 +245,7 @@
       font-weight: bold;
     }
 
-    /* Floating Telemetry HUD (Judge Showcase) */
+    /* Telemetry HUD */
     .telemetry-hud {
       position: fixed;
       bottom: 20px;
@@ -296,7 +298,7 @@
 </head>
 <body>
 
-  <!-- Telemetry HUD for Demonstrating Friction AI to Judges -->
+  <!-- Telemetry HUD -->
   <div class="telemetry-hud" id="hud">
     <div style="font-weight: bold; margin-bottom: 4px; color: #fff;">📊 ADAPTI Telemetry Engine</div>
     <div>Rage Clicks: <span id="hudClicks">0</span>/3</div>
@@ -318,6 +320,8 @@
         <span>Accessibility:</span>
         <button class="pill-btn" onclick="toggleContrast()">🌓 Contrast</button>
         <button class="pill-btn" onclick="toggleDyslexia()">📖 Dyslexia Font</button>
+        <!-- Speak as you type toggle -->
+        <button class="pill-btn active" id="echoBtn" onclick="toggleSpeechEcho()">🔊 Read While Typing: ON</button>
       </div>
       <div class="a11y-group">
         <span>Text Size:</span>
@@ -379,9 +383,14 @@
             <button class="speak-btn" onclick="speakText('We simplified this page. What is your full name?')">🔊 Listen</button>
           </div>
           
-          <label>Your Name</label>
+          <label>Your Name <span style="font-weight: normal; color: #64748b;">(Type or use spacebar to hear words aloud)</span></label>
           <div class="input-with-voice">
-            <input type="text" id="userNameInput" placeholder="Type or click the microphone to speak" />
+            <input 
+              type="text" 
+              id="userNameInput" 
+              placeholder="Type your name or words here..." 
+              onkeyup="handleTypeEcho(event)"
+            />
             <button class="voice-btn" id="micBtn" title="Speak your answer" onclick="startDictation()">🎙️</button>
           </div>
           <span id="listeningIndicator" style="font-size: 12px; color: #ef4444; display: none;">Listening... speak clearly into your mic.</span>
@@ -437,6 +446,55 @@
     let frictionScore = 0;
     let currentMode = 'portal';
     let baseFontSize = 15;
+    let speechEchoEnabled = true;
+
+    // --- Type-and-Speak (Echo Typing) Engine ---
+    function toggleSpeechEcho() {
+      speechEchoEnabled = !speechEchoEnabled;
+      const btn = document.getElementById('echoBtn');
+      if (speechEchoEnabled) {
+        btn.textContent = '🔊 Read While Typing: ON';
+        btn.classList.add('active');
+      } else {
+        btn.textContent = '🔇 Read While Typing: OFF';
+        btn.classList.remove('active');
+      }
+    }
+
+    function handleTypeEcho(event) {
+      if (!speechEchoEnabled) return;
+
+      const text = event.target.value.trim();
+      if (!text) return;
+
+      // 1. If user presses Space: speak the last typed word
+      if (event.code === 'Space' || event.key === ' ') {
+        const words = text.split(/\s+/);
+        const lastWord = words[words.length - 1];
+        if (lastWord) {
+          speakText(lastWord);
+        }
+      }
+
+      // 2. If user finishes a sentence with '.', '!', or '?': speak the sentence
+      else if (event.key === '.' || event.key === '!' || event.key === '?') {
+        const sentences = text.split(/[.!?]+/).filter(Boolean);
+        const lastSentence = sentences[sentences.length - 1];
+        if (lastSentence) {
+          speakText(lastSentence);
+        }
+      }
+    }
+
+    // --- Web Speech API (TTS) ---
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.0;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
 
     // --- Accessibility Customizers ---
     function toggleContrast() {
@@ -478,11 +536,10 @@
       }
     }
 
-    // Passive Mouse Tremor/Hesitation Tracker
     let lastDirX = 0;
     let lastX = 0;
     window.addEventListener('mousemove', (e) => {
-      idleSeconds = 0; // Reset idle timer on deliberate movement
+      idleSeconds = 0;
       const dirX = e.clientX > lastX ? 1 : -1;
       if (dirX !== lastDirX && Math.abs(e.clientX - lastX) > 10) {
         tremorCount++;
@@ -492,7 +549,6 @@
       lastX = e.clientX;
     });
 
-    // Idle Hesitation Timer
     setInterval(() => {
       if (currentMode === 'portal') {
         idleSeconds++;
@@ -504,15 +560,7 @@
       updateFriction(1);
     }
 
-    // --- Native Speech Synthesis & Recognition ---
-    function speakText(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        window.speechSynthesis.speak(utterance);
-      }
-    }
-
+    // --- Speech Recognition ---
     function startDictation() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
@@ -530,6 +578,7 @@
       };
       recognition.onresult = (event) => {
         input.value = event.results[0][0].transcript;
+        speakText(input.value);
       };
       recognition.onerror = () => {
         micBtn.classList.remove('recording');
