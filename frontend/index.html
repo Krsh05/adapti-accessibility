@@ -5,84 +5,160 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ADAPTI Prototype</title>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f8fafc;
-      color: #1e293b;
-      margin: 0;
-      padding: 30px;
+    * { box-sizing: border-box; transition: background 0.2s, color 0.2s; }
+    :root {
+      --bg-main: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-sub: #64748b;
+      --primary: #2563eb;
+      --border-color: #e2e8f0;
+      --base-font-size: 15px;
+      --font-family: Arial, sans-serif;
     }
-    .container { max-width: 700px; margin: 0 auto; }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      margin: 0;
+      padding: 24px;
+      font-size: var(--base-font-size);
+    }
+
+    /* High-Contrast Mode */
+    body.high-contrast {
+      --bg-main: #000000;
+      --card-bg: #121212;
+      --text-main: #ffff00;
+      --text-sub: #ffffff;
+      --primary: #00ffff;
+      --border-color: #ffff00;
+    }
+    body.high-contrast input, 
+    body.high-contrast button {
+      border-color: #ffff00 !important;
+      color: #ffff00 !important;
+      background: #000000 !important;
+    }
+
+    /* Dyslexic-Friendly Typography Mode */
+    body.dyslexic-mode {
+      --font-family: 'Verdana', 'Comic Sans MS', sans-serif;
+      letter-spacing: 0.08em;
+      line-height: 1.8;
+    }
+
+    .container { max-width: 760px; margin: 0 auto; }
+
+    /* Accessibility Bar */
+    .a11y-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 16px;
+      font-size: 13px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .a11y-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pill-btn {
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .pill-btn:hover { border-color: var(--primary); }
+
+    /* Header */
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
     }
-    .header h2 { margin: 0; font-size: 22px; }
-    .header span { color: #2563eb; font-size: 14px; }
-    .header p { margin: 0; font-size: 12px; color: #64748b; }
+    .header h2 { margin: 0; font-size: 24px; }
+    .header span { color: var(--primary); font-size: 14px; }
+    .header p { margin: 0; font-size: 13px; color: var(--text-sub); }
+
     .toggle-btn {
       padding: 8px 14px;
       border-radius: 6px;
-      border: 1px solid #cbd5e1;
-      background: white;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      color: var(--text-main);
       cursor: pointer;
       font-size: 12px;
       font-weight: bold;
     }
+
     .card {
-      background: white;
+      background: var(--card-bg);
       padding: 30px;
       border-radius: 12px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border-color);
     }
+
     .tag-portal {
       font-size: 11px;
       background: #fee2e2;
       color: #991b1b;
-      padding: 3px 8px;
+      padding: 4px 8px;
       border-radius: 4px;
       font-weight: bold;
       text-transform: uppercase;
       display: inline-block;
     }
+
     .tag-adapti {
       font-size: 11px;
       background: #dbeafe;
       color: #1e40af;
-      padding: 3px 8px;
+      padding: 4px 8px;
       border-radius: 4px;
       font-weight: bold;
       text-transform: uppercase;
       display: inline-block;
     }
+
     .form-group {
       display: flex;
       flex-direction: column;
       gap: 14px;
       margin-top: 20px;
     }
-    label { font-size: 12px; font-weight: bold; }
+
+    label { font-size: 13px; font-weight: bold; }
     
-    .input-with-voice {
-      display: flex;
-      gap: 8px;
-    }
+    .input-with-voice { display: flex; gap: 8px; }
     .input-with-voice input {
       flex: 1;
       padding: 10px;
       border-radius: 6px;
-      border: 1px solid #cbd5e1;
-      font-size: 14px;
+      border: 1px solid var(--border-color);
+      font-size: inherit;
+      color: inherit;
+      background: var(--card-bg);
     }
+
     .voice-btn {
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
       border-radius: 6px;
-      padding: 0 12px;
+      padding: 0 14px;
       cursor: pointer;
       font-size: 16px;
       display: flex;
@@ -94,7 +170,6 @@
       border-color: #ef4444;
       animation: pulse 1.5s infinite;
     }
-
     @keyframes pulse {
       0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
       70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
@@ -102,26 +177,26 @@
     }
 
     .warning-box {
-      padding: 10px;
+      padding: 12px;
       background: #fffbeb;
       border: 1px solid #fef3c7;
       border-radius: 6px;
-      font-size: 11px;
+      font-size: 12px;
       color: #92400e;
     }
+
     .info-box {
       background: #eff6ff;
       padding: 14px;
       border-radius: 8px;
       border: 1px solid #dbeafe;
       color: #1e40af;
-      font-size: 14px;
-      font-weight: 500;
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 10px;
     }
+
     .speak-btn {
       background: white;
       border: 1px solid #93c5fd;
@@ -135,11 +210,9 @@
       gap: 4px;
       white-space: nowrap;
     }
-    .speak-btn:hover {
-      background: #dbeafe;
-    }
+
     .btn-disabled {
-      padding: 12px;
+      padding: 14px;
       background: #cbd5e1;
       color: #475569;
       border: none;
@@ -148,19 +221,20 @@
       font-weight: bold;
       width: 100%;
     }
+
     .btn-primary {
-      padding: 12px;
-      background: #2563eb;
+      padding: 14px;
+      background: var(--primary);
       color: white;
       border: none;
       border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
-      font-size: 14px;
       width: 100%;
     }
+
     .btn-success {
-      padding: 10px;
+      padding: 12px;
       background: #16a34a;
       color: white;
       border: none;
@@ -168,30 +242,95 @@
       cursor: pointer;
       font-weight: bold;
     }
+
+    /* Floating Telemetry HUD (Judge Showcase) */
+    .telemetry-hud {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(15, 23, 42, 0.92);
+      color: #38bdf8;
+      font-family: monospace;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      border: 1px solid #334155;
+      z-index: 1000;
+      min-width: 220px;
+    }
+    .meter-bar {
+      width: 100%;
+      height: 6px;
+      background: #334155;
+      border-radius: 3px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .meter-fill {
+      height: 100%;
+      width: 0%;
+      background: #22c55e;
+      transition: width 0.3s, background 0.3s;
+    }
+
+    /* Prompt Box */
     .prompt-box {
       position: fixed;
       bottom: 30px;
       right: 30px;
-      background: white;
+      background: var(--card-bg);
       padding: 18px;
       border-radius: 10px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-      border: 2px solid #2563eb;
+      border: 2px solid var(--primary);
       max-width: 340px;
       display: none;
       z-index: 1000;
     }
-    .prompt-box h4 { margin: 0 0 6px 0; font-size: 14px; }
-    .prompt-box p { font-size: 12px; color: #64748b; margin: 0 0 12px 0; line-height: 1.4; }
+    .prompt-box h4 { margin: 0 0 6px 0; font-size: 15px; }
+    .prompt-box p { font-size: 13px; color: var(--text-sub); margin: 0 0 12px 0; }
+
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
+
+  <!-- Telemetry HUD for Demonstrating Friction AI to Judges -->
+  <div class="telemetry-hud" id="hud">
+    <div style="font-weight: bold; margin-bottom: 4px; color: #fff;">📊 ADAPTI Telemetry Engine</div>
+    <div>Rage Clicks: <span id="hudClicks">0</span>/3</div>
+    <div>Cursor Direction Flips: <span id="hudTremor">0</span></div>
+    <div>Hesitation Idle: <span id="hudIdle">0</span>s</div>
+    <div style="margin-top: 6px; display: flex; justify-content: space-between;">
+      <span>Friction Index:</span>
+      <span id="hudScore" style="font-weight: bold;">0%</span>
+    </div>
+    <div class="meter-bar">
+      <div class="meter-fill" id="meterFill"></div>
+    </div>
+  </div>
+
   <div class="container">
+    <!-- Accessibility Controls Toolbar -->
+    <div class="a11y-toolbar">
+      <div class="a11y-group">
+        <span>Accessibility:</span>
+        <button class="pill-btn" onclick="toggleContrast()">🌓 Contrast</button>
+        <button class="pill-btn" onclick="toggleDyslexia()">📖 Dyslexia Font</button>
+      </div>
+      <div class="a11y-group">
+        <span>Text Size:</span>
+        <button class="pill-btn" onclick="adjustFontSize(-1)">A-</button>
+        <button class="pill-btn" onclick="adjustFontSize(1)">A+</button>
+      </div>
+    </div>
+
+    <!-- Header -->
     <div class="header">
       <div>
-        <h2>ADAPTI <span>Prototype</span></h2>
-        <p>Technology that adapts to you</p>
+        <h2>ADAPTI <span>Engine</span></h2>
+        <p>Dynamic friction detection & cognitive simplification</p>
       </div>
       <button class="toggle-btn" id="toggleModeBtn" onclick="toggleMode()">Switch to ADAPTI Mode</button>
     </div>
@@ -201,17 +340,17 @@
       <div id="portalView">
         <span class="tag-portal">Current Portal (Unadapted)</span>
         <h3 style="margin-top: 12px; font-size: 18px;">Higher Education Financial Grant Form 2026-B</h3>
-        <p style="font-size: 12px; color: #64748b;">Notice: Pursuant to Sub-Clause 14.b, furnish all requisite credentials prior to expiration.</p>
+        <p style="font-size: 13px; color: var(--text-sub);">Notice: Pursuant to Sub-Clause 14.b, applicants must furnish valid credentials before expiration.</p>
 
         <div class="form-group">
           <div>
             <label>Full Candidate Nomenclature *</label>
-            <input type="text" style="width:100%; padding:10px; border-radius:6px; border:1px solid #cbd5e1;" placeholder="Enter full legal name" />
+            <input type="text" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color);" placeholder="Enter full legal name" />
           </div>
 
           <div>
             <label>Certified Income Dossier (PDF only) *</label>
-            <input type="file" style="font-size: 12px;" />
+            <input type="file" style="font-size: 12px; margin-top: 4px;" />
           </div>
 
           <div class="warning-box">
@@ -219,7 +358,7 @@
           </div>
 
           <div>
-            <p style="font-size: 11px; color: #94a3b8; margin: 0 0 6px 0;">(Demo: Click this button 3 times to trigger ADAPTI)</p>
+            <p style="font-size: 12px; color: var(--text-sub); margin: 0 0 6px 0;">(Demo: Click this button repeatedly to increase friction score)</p>
             <button class="btn-disabled" onclick="handleRageClick()">Submit Dossier For Verification</button>
           </div>
         </div>
@@ -227,9 +366,9 @@
 
       <!-- 2. ADAPTI GUIDED MODE -->
       <div id="adaptiView" class="hidden">
-        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
           <span class="tag-adapti">ADAPTI Guided Mode</span>
-          <span id="stepCounter" style="font-size: 12px; font-weight: bold; color: #64748b;">Step 1 of 2</span>
+          <span id="stepCounter" style="font-size: 12px; font-weight: bold; color: var(--text-sub);">Step 1 of 2</span>
         </div>
         <h3 style="font-size: 20px; margin-top: 12px;">🎓 Apply for Scholarship</h3>
 
@@ -245,7 +384,7 @@
             <input type="text" id="userNameInput" placeholder="Type or click the microphone to speak" />
             <button class="voice-btn" id="micBtn" title="Speak your answer" onclick="startDictation()">🎙️</button>
           </div>
-          <span id="listeningIndicator" style="font-size: 11px; color: #ef4444; display: none;">Listening... speak your name clearly.</span>
+          <span id="listeningIndicator" style="font-size: 12px; color: #ef4444; display: none;">Listening... speak clearly into your mic.</span>
 
           <button class="btn-primary" onclick="goToStep(2)">Continue to Document Upload →</button>
         </div>
@@ -269,7 +408,7 @@
       <div id="successView" class="hidden" style="text-align: center; padding: 20px 0;">
         <div style="font-size: 40px; margin-bottom: 10px;">🎉</div>
         <h2 style="color: #16a34a; margin: 0 0 8px 0;">Application Submitted!</h2>
-        <p id="successSummary" style="color: #475569; font-size: 14px;">Your details have been successfully received through ADAPTI.</p>
+        <p id="successSummary" style="color: var(--text-sub); font-size: 15px;">Your details have been successfully received through ADAPTI.</p>
         <button class="speak-btn" style="margin-bottom: 15px;" onclick="speakText(document.getElementById('successSummary').textContent)">🔊 Read Confirmation</button>
         <div>
           <button class="btn-primary" style="max-width: 200px; margin: 0 auto;" onclick="resetDemo()">Start Over</button>
@@ -278,87 +417,134 @@
     </div>
   </div>
 
-  <!-- Friction Popup -->
+  <!-- Friction Popup Notification -->
   <div id="frictionPrompt" class="prompt-box">
     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-      <h4>⚡ Difficulty Detected</h4>
-      <button class="speak-btn" style="padding: 2px 6px; font-size: 11px;" onclick="speakText('We noticed multiple clicks without progress. Would you like ADAPTI to simplify this form into easy steps?')">🔊</button>
+      <h4>⚡ High Friction Detected</h4>
+      <button class="speak-btn" style="padding: 2px 6px; font-size: 11px;" onclick="speakText('Difficulty detected. Would you like ADAPTI to simplify this form into easy steps?')">🔊</button>
     </div>
-    <p>We noticed multiple clicks without progress. Would you like ADAPTI to simplify this form into easy steps?</p>
+    <p>Passive telemetry detected repeated clicks and hesitation. Simplify this form?</p>
     <div style="display: flex; gap: 8px;">
-      <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; width: auto;" onclick="activateAdapti()">Simplify Now</button>
+      <button class="btn-primary" style="padding: 8px 14px; font-size: 12px; width: auto;" onclick="activateAdapti()">Simplify Now</button>
       <button class="toggle-btn" onclick="dismissPrompt()">No thanks</button>
     </div>
   </div>
 
   <script>
     let clickCount = 0;
+    let tremorCount = 0;
+    let idleSeconds = 0;
+    let frictionScore = 0;
     let currentMode = 'portal';
+    let baseFontSize = 15;
 
-    // --- Web Speech API (Text-to-Speech) ---
-    function speakText(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // Stop any currently speaking voice
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 1.0;
-        utterance.pitch = 1.0;
-        window.speechSynthesis.speak(utterance);
+    // --- Accessibility Customizers ---
+    function toggleContrast() {
+      document.body.classList.toggle('high-contrast');
+    }
+
+    function toggleDyslexia() {
+      document.body.classList.toggle('dyslexic-mode');
+    }
+
+    function adjustFontSize(delta) {
+      baseFontSize = Math.min(22, Math.max(12, baseFontSize + delta));
+      document.documentElement.style.setProperty('--base-font-size', baseFontSize + 'px');
+    }
+
+    // --- Telemetry & Friction Calculation ---
+    function updateFriction(addClicks = 0) {
+      clickCount += addClicks;
+      frictionScore = Math.min(100, (clickCount * 25) + (tremorCount * 2) + (idleSeconds * 5));
+
+      document.getElementById('hudClicks').textContent = clickCount;
+      document.getElementById('hudTremor').textContent = tremorCount;
+      document.getElementById('hudIdle').textContent = idleSeconds;
+      document.getElementById('hudScore').textContent = frictionScore + '%';
+
+      const meterFill = document.getElementById('meterFill');
+      meterFill.style.width = frictionScore + '%';
+
+      if (frictionScore > 65) {
+        meterFill.style.background = '#ef4444';
+      } else if (frictionScore > 35) {
+        meterFill.style.background = '#eab308';
       } else {
-        alert("Text-to-speech is not supported in this browser.");
+        meterFill.style.background = '#22c55e';
+      }
+
+      if (frictionScore >= 70 && currentMode === 'portal') {
+        document.getElementById('frictionPrompt').style.display = 'block';
       }
     }
 
-    // --- Web Speech API (Speech-to-Text Dictation) ---
+    // Passive Mouse Tremor/Hesitation Tracker
+    let lastDirX = 0;
+    let lastX = 0;
+    window.addEventListener('mousemove', (e) => {
+      idleSeconds = 0; // Reset idle timer on deliberate movement
+      const dirX = e.clientX > lastX ? 1 : -1;
+      if (dirX !== lastDirX && Math.abs(e.clientX - lastX) > 10) {
+        tremorCount++;
+        lastDirX = dirX;
+        updateFriction(0);
+      }
+      lastX = e.clientX;
+    });
+
+    // Idle Hesitation Timer
+    setInterval(() => {
+      if (currentMode === 'portal') {
+        idleSeconds++;
+        updateFriction(0);
+      }
+    }, 1000);
+
+    function handleRageClick() {
+      updateFriction(1);
+    }
+
+    // --- Native Speech Synthesis & Recognition ---
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
     function startDictation() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Speech recognition is not supported in this browser. Please use Chrome or Edge.");
+        alert("Speech recognition is supported in Chrome & Edge.");
         return;
       }
-
       const micBtn = document.getElementById('micBtn');
       const indicator = document.getElementById('listeningIndicator');
       const input = document.getElementById('userNameInput');
 
       const recognition = new SpeechRecognition();
-      recognition.lang = 'en-US';
-      recognition.interimResults = false;
-
       recognition.onstart = () => {
         micBtn.classList.add('recording');
         indicator.style.display = 'block';
       };
-
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        input.value = transcript;
+        input.value = event.results[0][0].transcript;
       };
-
       recognition.onerror = () => {
         micBtn.classList.remove('recording');
         indicator.style.display = 'none';
       };
-
       recognition.onend = () => {
         micBtn.classList.remove('recording');
         indicator.style.display = 'none';
       };
-
       recognition.start();
     }
 
-    // --- Friction & Navigation Logic ---
-    function handleRageClick() {
-      clickCount++;
-      if (clickCount >= 3) {
-        document.getElementById('frictionPrompt').style.display = 'block';
-        speakText('Difficulty detected. Would you like ADAPTI to simplify this form for you?');
-      }
-    }
-
+    // --- View Handlers ---
     function dismissPrompt() {
       document.getElementById('frictionPrompt').style.display = 'none';
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     }
 
     function activateAdapti() {
@@ -406,12 +592,12 @@
         step1.classList.add('hidden');
         step2.classList.remove('hidden');
         counter.textContent = 'Step 2 of 2';
-        speakText('Upload any proof of family income.');
+        speakText('Upload proof of family income.');
       }
     }
 
     function submitApplication() {
-      const name = document.getElementById('userNameInput').value || 'Candidate';
+      const name = document.getElementById('userNameInput').value || 'Applicant';
       document.getElementById('adaptiView').classList.add('hidden');
       const successView = document.getElementById('successView');
       document.getElementById('successSummary').innerHTML = `Thank you, <strong>${name}</strong>. Your details have been received through ADAPTI.`;
@@ -421,6 +607,9 @@
 
     function resetDemo() {
       clickCount = 0;
+      tremorCount = 0;
+      idleSeconds = 0;
+      updateFriction(0);
       document.getElementById('userNameInput').value = '';
       document.getElementById('userDocInput').value = '';
       setMode('portal');
