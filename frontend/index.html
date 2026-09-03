@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADAPTI Prototype</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      margin: 0;
+      padding: 30px;
+    }
+    .container { max-width: 700px; margin: 0 auto; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .header h2 { margin: 0; font-size: 22px; }
+    .header span { color: #2563eb; font-size: 14px; }
+    .header p { margin: 0; font-size: 12px; color: #64748b; }
+    .toggle-btn {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      border: 1px solid #e2e8f0;
+    }
+    .tag-portal {
+      font-size: 11px;
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+    .tag-adapti {
+      font-size: 11px;
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 20px;
+    }
+    label { font-size: 12px; font-weight: bold; }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      font-size: 14px;
+    }
+    .warning-box {
+      padding: 10px;
+      background: #fffbeb;
+      border: 1px solid #fef3c7;
+      border-radius: 6px;
+      font-size: 11px;
+      color: #92400e;
+    }
+    .info-box {
+      background: #eff6ff;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #dbeafe;
+      color: #1e40af;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .btn-disabled {
+      padding: 12px;
+      background: #cbd5e1;
+      color: #475569;
+      border: none;
+      border-radius: 6px;
+      cursor: not-allowed;
+      font-weight: bold;
+      width: 100%;
+    }
+    .btn-primary {
+      padding: 12px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      width: 100%;
+    }
+    .btn-success {
+      padding: 10px;
+      background: #16a34a;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .prompt-box {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: white;
+      padding: 18px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      border: 2px solid #2563eb;
+      max-width: 320px;
+      display: none;
+    }
+    .prompt-box h4 { margin: 0 0 6px 0; font-size: 14px; }
+    .prompt-box p { font-size: 12px; color: #64748b; margin: 0 0 12px 0; line-height: 1.4; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h2>ADAPTI <span>Prototype</span></h2>
+        <p>Technology that adapts to you</p>
+      </div>
+      <button class="toggle-btn" id="toggleModeBtn" onclick="toggleMode()">Switch to ADAPTI Mode</button>
+    </div>
+
+    <div class="card">
+      <!-- 1. CLUTTERED PORTAL -->
+      <div id="portalView">
+        <span class="tag-portal">Current Portal (Unadapted)</span>
+        <h3 style="margin-top: 12px; font-size: 18px;">Higher Education Financial Grant Form 2026-B</h3>
+        <p style="font-size: 12px; color: #64748b;">Notice: Pursuant to Sub-Clause 14.b, furnish all requisite credentials prior to expiration.</p>
+
+        <div class="form-group">
+          <div>
+            <label>Full Candidate Nomenclature *</label>
+            <input type="text" placeholder="Enter full legal name" />
+          </div>
+
+          <div>
+            <label>Certified Income Dossier (PDF only) *</label>
+            <input type="file" style="font-size: 12px;" />
+          </div>
+
+          <div class="warning-box">
+            Warning: Clicking outside this dialogue box may invalidate session tokens. Ensure re-verification before execution.
+          </div>
+
+          <div>
+            <p style="font-size: 11px; color: #94a3b8; margin: 0 0 6px 0;">(Demo: Click this button 3 times to simulate user friction)</p>
+            <button class="btn-disabled" onclick="handleRageClick()">Submit Dossier For Verification</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. ADAPTI GUIDED MODE -->
+      <div id="adaptiView" class="hidden">
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
+          <span class="tag-adapti">ADAPTI Guided Mode</span>
+          <span id="stepCounter" style="font-size: 12px; font-weight: bold; color: #64748b;">Step 1 of 2</span>
+        </div>
+        <h3 style="font-size: 20px; margin-top: 12px;">🎓 Apply for Scholarship</h3>
+
+        <div id="step1" class="form-group">
+          <div class="info-box">We simplified this page. What is your full name?</div>
+          <input type="text" id="userNameInput" placeholder="e.g. Alex Smith" />
+          <button class="btn-primary" onclick="goToStep(2)">Continue to Document Upload →</button>
+        </div>
+
+        <div id="step2" class="form-group hidden">
+          <div class="info-box">Upload any proof of family income (like an income slip or certificate).</div>
+          <input type="file" id="userDocInput" style="padding: 12px; border: 2px dashed #93c5fd; border-radius: 8px;" />
+          <div style="display: flex; gap: 10px;">
+            <button class="toggle-btn" style="flex: 1;" onclick="goToStep(1)">← Back</button>
+            <button class="btn-success" style="flex: 2;" onclick="submitApplication()">Complete Submission ✓</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. SUCCESS SCREEN -->
+      <div id="successView" class="hidden" style="text-align: center; padding: 20px 0;">
+        <div style="font-size: 40px; margin-bottom: 10px;">🎉</div>
+        <h2 style="color: #16a34a; margin: 0 0 8px 0;">Application Submitted!</h2>
+        <p style="color: #475569; font-size: 14px;">Your details have been successfully received through ADAPTI.</p>
+        <button class="btn-primary" style="max-width: 200px; margin-top: 15px;" onclick="resetDemo()">Start Over</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Friction Popup -->
+  <div id="frictionPrompt" class="prompt-box">
+    <h4>⚡ Difficulty Detected</h4>
+    <p>We noticed multiple clicks without progress. Would you like ADAPTI to simplify this form into easy steps?</p>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; width: auto;" onclick="activateAdapti()">Simplify Now</button>
+      <button class="toggle-btn" onclick="dismissPrompt()">No thanks</button>
+    </div>
+  </div>
+
+  <script>
+    let clickCount = 0;
+    let currentMode = 'portal';
+
+    function handleRageClick() {
+      clickCount++;
+      if (clickCount >= 3) {
+        document.getElementById('frictionPrompt').style.display = 'block';
+      }
+    }
+
+    function dismissPrompt() {
+      document.getElementById('frictionPrompt').style.display = 'none';
+    }
+
+    function activateAdapti() {
+      dismissPrompt();
+      setMode('adapti');
+    }
+
+    function toggleMode() {
+      setMode(currentMode === 'portal' ? 'adapti' : 'portal');
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      const portalView = document.getElementById('portalView');
+      const adaptiView = document.getElementById('adaptiView');
+      const successView = document.getElementById('successView');
+      const toggleBtn = document.getElementById('toggleModeBtn');
+
+      successView.classList.add('hidden');
+
+      if (mode === 'adapti') {
+        portalView.classList.add('hidden');
+        adaptiView.classList.remove('hidden');
+        toggleBtn.textContent = 'Back to Cluttered Portal';
+        goToStep(1);
+      } else {
+        portalView.classList.remove('hidden');
+        adaptiView.classList.add('hidden');
+        toggleBtn.textContent = 'Switch to ADAPTI Mode';
+      }
+    }
+
+    function goToStep(step) {
+      const step1 = document.getElementById('step1');
+      const step2 = document.getElementById('step2');
+      const counter = document.getElementById('stepCounter');
+
+      if (step === 1) {
+        step1.classList.remove('hidden');
+        step2.classList.add('hidden');
+        counter.textContent = 'Step 1 of 2';
+      } else {
+        step1.classList.add('hidden');
+        step2.classList.remove('hidden');
+        counter.textContent = 'Step 2 of 2';
+      }
+    }
+
+    function submitApplication() {
+      document.getElementById('adaptiView').classList.add('hidden');
+      document.getElementById('successView').classList.remove('hidden');
+    }
+
+    function resetDemo() {
+      clickCount = 0;
+      document.getElementById('userNameInput').value = '';
+      document.getElementById('userDocInput').value = '';
+      setMode('portal');
+    }
+  </script>
+</body>
+</html>
