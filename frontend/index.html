@@ -561,33 +561,61 @@
     }
 
     // --- Speech Recognition ---
+    // --- Enhanced Voice Dictation with Real-Time Display & Echo Back ---
     function startDictation() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Speech recognition is supported in Chrome & Edge.");
+        alert("Speech recognition is supported in Chrome & Edge browsers.");
         return;
       }
+
       const micBtn = document.getElementById('micBtn');
       const indicator = document.getElementById('listeningIndicator');
       const input = document.getElementById('userNameInput');
 
       const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.continuous = false;
+      recognition.interimResults = true; // Shows live words on the screen as you talk
+
+      let finalTranscript = '';
+
       recognition.onstart = () => {
         micBtn.classList.add('recording');
         indicator.style.display = 'block';
+        indicator.textContent = 'Listening... speak now';
       };
+
       recognition.onresult = (event) => {
-        input.value = event.results[0][0].transcript;
-        speakText(input.value);
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+        // Immediately render text into the input field
+        input.value = finalTranscript || interimTranscript;
       };
-      recognition.onerror = () => {
+
+      recognition.onerror = (event) => {
         micBtn.classList.remove('recording');
         indicator.style.display = 'none';
+        console.error("Speech Recognition Error: ", event.error);
       };
+
       recognition.onend = () => {
         micBtn.classList.remove('recording');
         indicator.style.display = 'none';
+
+        const capturedText = input.value.trim();
+        if (capturedText) {
+          // Echo-speak the captured sentence back to the user
+          speakText(`You said: ${capturedText}`);
+        }
       };
+
       recognition.start();
     }
 
