@@ -66,13 +66,41 @@
       margin-top: 20px;
     }
     label { font-size: 12px; font-weight: bold; }
-    input[type="text"] {
-      width: 100%;
+    
+    .input-with-voice {
+      display: flex;
+      gap: 8px;
+    }
+    .input-with-voice input {
+      flex: 1;
       padding: 10px;
       border-radius: 6px;
       border: 1px solid #cbd5e1;
       font-size: 14px;
     }
+    .voice-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 0 12px;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .voice-btn.recording {
+      background: #fee2e2;
+      border-color: #ef4444;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
     .warning-box {
       padding: 10px;
       background: #fffbeb;
@@ -83,12 +111,32 @@
     }
     .info-box {
       background: #eff6ff;
-      padding: 12px;
+      padding: 14px;
       border-radius: 8px;
       border: 1px solid #dbeafe;
       color: #1e40af;
       font-size: 14px;
       font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .speak-btn {
+      background: white;
+      border: 1px solid #93c5fd;
+      color: #1e40af;
+      border-radius: 6px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .speak-btn:hover {
+      background: #dbeafe;
     }
     .btn-disabled {
       padding: 12px;
@@ -129,8 +177,9 @@
       border-radius: 10px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.15);
       border: 2px solid #2563eb;
-      max-width: 320px;
+      max-width: 340px;
       display: none;
+      z-index: 1000;
     }
     .prompt-box h4 { margin: 0 0 6px 0; font-size: 14px; }
     .prompt-box p { font-size: 12px; color: #64748b; margin: 0 0 12px 0; line-height: 1.4; }
@@ -157,7 +206,7 @@
         <div class="form-group">
           <div>
             <label>Full Candidate Nomenclature *</label>
-            <input type="text" placeholder="Enter full legal name" />
+            <input type="text" style="width:100%; padding:10px; border-radius:6px; border:1px solid #cbd5e1;" placeholder="Enter full legal name" />
           </div>
 
           <div>
@@ -170,7 +219,7 @@
           </div>
 
           <div>
-            <p style="font-size: 11px; color: #94a3b8; margin: 0 0 6px 0;">(Demo: Click this button 3 times to simulate user friction)</p>
+            <p style="font-size: 11px; color: #94a3b8; margin: 0 0 6px 0;">(Demo: Click this button 3 times to trigger ADAPTI)</p>
             <button class="btn-disabled" onclick="handleRageClick()">Submit Dossier For Verification</button>
           </div>
         </div>
@@ -184,14 +233,30 @@
         </div>
         <h3 style="font-size: 20px; margin-top: 12px;">🎓 Apply for Scholarship</h3>
 
+        <!-- Step 1 -->
         <div id="step1" class="form-group">
-          <div class="info-box">We simplified this page. What is your full name?</div>
-          <input type="text" id="userNameInput" placeholder="e.g. Alex Smith" />
+          <div class="info-box">
+            <span id="step1Prompt">We simplified this page. What is your full name?</span>
+            <button class="speak-btn" onclick="speakText('We simplified this page. What is your full name?')">🔊 Listen</button>
+          </div>
+          
+          <label>Your Name</label>
+          <div class="input-with-voice">
+            <input type="text" id="userNameInput" placeholder="Type or click the microphone to speak" />
+            <button class="voice-btn" id="micBtn" title="Speak your answer" onclick="startDictation()">🎙️</button>
+          </div>
+          <span id="listeningIndicator" style="font-size: 11px; color: #ef4444; display: none;">Listening... speak your name clearly.</span>
+
           <button class="btn-primary" onclick="goToStep(2)">Continue to Document Upload →</button>
         </div>
 
+        <!-- Step 2 -->
         <div id="step2" class="form-group hidden">
-          <div class="info-box">Upload any proof of family income (like an income slip or certificate).</div>
+          <div class="info-box">
+            <span id="step2Prompt">Upload any proof of family income, such as an income certificate or salary slip.</span>
+            <button class="speak-btn" onclick="speakText('Upload any proof of family income, such as an income certificate or salary slip.')">🔊 Listen</button>
+          </div>
+
           <input type="file" id="userDocInput" style="padding: 12px; border: 2px dashed #93c5fd; border-radius: 8px;" />
           <div style="display: flex; gap: 10px;">
             <button class="toggle-btn" style="flex: 1;" onclick="goToStep(1)">← Back</button>
@@ -204,15 +269,21 @@
       <div id="successView" class="hidden" style="text-align: center; padding: 20px 0;">
         <div style="font-size: 40px; margin-bottom: 10px;">🎉</div>
         <h2 style="color: #16a34a; margin: 0 0 8px 0;">Application Submitted!</h2>
-        <p style="color: #475569; font-size: 14px;">Your details have been successfully received through ADAPTI.</p>
-        <button class="btn-primary" style="max-width: 200px; margin-top: 15px;" onclick="resetDemo()">Start Over</button>
+        <p id="successSummary" style="color: #475569; font-size: 14px;">Your details have been successfully received through ADAPTI.</p>
+        <button class="speak-btn" style="margin-bottom: 15px;" onclick="speakText(document.getElementById('successSummary').textContent)">🔊 Read Confirmation</button>
+        <div>
+          <button class="btn-primary" style="max-width: 200px; margin: 0 auto;" onclick="resetDemo()">Start Over</button>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Friction Popup -->
   <div id="frictionPrompt" class="prompt-box">
-    <h4>⚡ Difficulty Detected</h4>
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <h4>⚡ Difficulty Detected</h4>
+      <button class="speak-btn" style="padding: 2px 6px; font-size: 11px;" onclick="speakText('We noticed multiple clicks without progress. Would you like ADAPTI to simplify this form into easy steps?')">🔊</button>
+    </div>
     <p>We noticed multiple clicks without progress. Would you like ADAPTI to simplify this form into easy steps?</p>
     <div style="display: flex; gap: 8px;">
       <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; width: auto;" onclick="activateAdapti()">Simplify Now</button>
@@ -224,20 +295,76 @@
     let clickCount = 0;
     let currentMode = 'portal';
 
+    // --- Web Speech API (Text-to-Speech) ---
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // Stop any currently speaking voice
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert("Text-to-speech is not supported in this browser.");
+      }
+    }
+
+    // --- Web Speech API (Speech-to-Text Dictation) ---
+    function startDictation() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Speech recognition is not supported in this browser. Please use Chrome or Edge.");
+        return;
+      }
+
+      const micBtn = document.getElementById('micBtn');
+      const indicator = document.getElementById('listeningIndicator');
+      const input = document.getElementById('userNameInput');
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        micBtn.classList.add('recording');
+        indicator.style.display = 'block';
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        input.value = transcript;
+      };
+
+      recognition.onerror = () => {
+        micBtn.classList.remove('recording');
+        indicator.style.display = 'none';
+      };
+
+      recognition.onend = () => {
+        micBtn.classList.remove('recording');
+        indicator.style.display = 'none';
+      };
+
+      recognition.start();
+    }
+
+    // --- Friction & Navigation Logic ---
     function handleRageClick() {
       clickCount++;
       if (clickCount >= 3) {
         document.getElementById('frictionPrompt').style.display = 'block';
+        speakText('Difficulty detected. Would you like ADAPTI to simplify this form for you?');
       }
     }
 
     function dismissPrompt() {
       document.getElementById('frictionPrompt').style.display = 'none';
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     }
 
     function activateAdapti() {
       dismissPrompt();
       setMode('adapti');
+      speakText('We simplified this page. What is your full name?');
     }
 
     function toggleMode() {
@@ -262,6 +389,7 @@
         portalView.classList.remove('hidden');
         adaptiView.classList.add('hidden');
         toggleBtn.textContent = 'Switch to ADAPTI Mode';
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       }
     }
 
@@ -278,12 +406,17 @@
         step1.classList.add('hidden');
         step2.classList.remove('hidden');
         counter.textContent = 'Step 2 of 2';
+        speakText('Upload any proof of family income.');
       }
     }
 
     function submitApplication() {
+      const name = document.getElementById('userNameInput').value || 'Candidate';
       document.getElementById('adaptiView').classList.add('hidden');
-      document.getElementById('successView').classList.remove('hidden');
+      const successView = document.getElementById('successView');
+      document.getElementById('successSummary').innerHTML = `Thank you, <strong>${name}</strong>. Your details have been received through ADAPTI.`;
+      successView.classList.remove('hidden');
+      speakText(`Application submitted successfully for ${name}.`);
     }
 
     function resetDemo() {
